@@ -96,13 +96,13 @@ class CallRecordCreate(generics.ListCreateAPIView):
 	serializer_class = CallRecordSerializer
 
 
-class TelephoneBillCreate(generics.ListCreateAPIView):
+class PhoneBillCreate(generics.ListCreateAPIView):
 	queryset = PhoneBill.objects.all()
 	serializer_class = PhoneBillSerializer
 
-	def get(self, request):
-		number = self.request.query_params.get('subscriber_phone', None)
-		call = TelephoneBill.objects.filter(subscriber_phone=number)
-		serializer = PhoneBillSerializer(call, many=True)
-		return Response(serializer.data, status=status.HTTP_200_OK)
+	# def get(self, request):
+	# 	number = self.request.query_params.get('subscriber_phone', None)
+	# 	call = PhoneBill.objects.filter(subscriber_phone=number)
+	# 	serializer = PhoneBillSerializer(call, many=True)
+	# 	return Response(serializer.data, status=status.HTTP_200_OK)
 
