@@ -9,9 +9,9 @@ handler400 = 'rest_framework.exceptions.bad_request'
 
 urlpatterns = [
 	path('', api_root),
-    path('call-start/', CallStartCreate.as_view(), name='call-start'),
-    path('call-end/', CallEndCreate.as_view(), name='call-end'),
-    path('call-records/', CallRecordCreate.as_view(), name='call-records'),
+    path('call/', CallStartCreate.as_view(), name='call-start'),
+    path('callend/', CallEndCreate.as_view(), name='call-end'),
+    path('callrecord/', CallRecordCreate.as_view(), name='call-records'),
     path('bills/', PhoneBillCreate.as_view(), name='bills')
 ]
 

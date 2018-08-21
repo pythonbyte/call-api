@@ -27,7 +27,7 @@ class CallRecord(models.Model):
 	start_date = models.DateField(null=True, blank=True)
 	start_time = models.TimeField(null=True, blank=True)
 	duration 	= models.DurationField(null=True, blank=True)
-	price 	= models.DecimalField(max_digits=8, decimal_places=2)
+	price 	= models.DecimalField(max_digits=8, decimal_places=2, null=True)
 
 class PhoneBill(models.Model):
 	subscriber =  models.CharField(max_length=11)

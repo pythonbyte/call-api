@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 
-from rest_framework import generics,status
+from rest_framework import generics,status, serializers
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
@@ -9,7 +9,7 @@ from rest_framework.views import APIView
 from callapi.models import CallStart, CallEnd, CallRecord, PhoneBill
 from callapi.serializers import (CallStartSerializer, CallEndSerializer, 
 								CallRecordSerializer, PhoneBillSerializer)
-
+from .billing import billing
 
 @api_view(['GET'])
 def api_root(request, format=None):
@@ -32,22 +32,23 @@ class CallStartCreate(generics.ListCreateAPIView):
 
 	def create(self, validated_data):
 		try:
-			source_number = validated_data.data['source_number']
-			destination_number = validated_data.data['destination_number']
-			call_pair = validated_data.data['call_pair_id']
-			record = validated_data.data['record_timestamp']
+			call_id = validated_data.data['call_id']
+			source = validated_data.data['source']
+			destination = validated_data.data['destination']
+			timestamp = validated_data.data['timestamp']
 		except:
 			raise serializers.ValidationError({
 				"non_fields_error": [
-					"All fields are required."
+					"All fields are required.",
+					"Fields: source, destination, call_id, timestamp"
 					]
 				})
 		else:
-			source_number = ''.join(x for x in source_number if x.isdigit())
-			destination_number = ''.join(x for x in destination_number if x.isdigit())
+			source_number = ''.join(x for x in source if x.isdigit())
+			destination_number = ''.join(x for x in destination if x.isdigit())
 			serializer = CallStartSerializer(
-				data={"source_number": source_number, "destination_number": destination_number, 
-						"call_pair_id": call_pair, "record_timestamp": record})
+				data={"source": source_number, "destination": destination_number, 
+						"call_id": call_id, "timestamp": timestamp})
 			if serializer.is_valid():
 				serializer.save()
 				return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -59,36 +60,36 @@ class CallEndCreate(generics.ListCreateAPIView):
 
 	def create(self, validated_data):
 		try:
-			call_pair = validated_data.data['call_pair_id']
-			record_end_timestamp = validated_data.data['record_end_timestamp']
+			print(validated_data.data)
+			call_id = validated_data.data['call_id']
+			timestamp = validated_data.data['timestamp']
 		except:
+			print(validated_data.data)
 			raise serializers.ValidationError({
 				"non_fields_error": [
-					"All fields are required."
+					"All fields are required.",
+					"Fields: call_id, timestamp"
 					]
 				})
 		else:
-			serializer = CallEndSerializer(data={"call_pair_id": call_pair, "record_end_timestamp": record_end_timestamp})
+			serializer = CallEndSerializer(data={"call_id": call_id, 
+												"timestamp": timestamp})
 			if serializer.is_valid():
 				serializer.save()
-			return Response(serlializer.errors, status=status.HTTP_400_BAD_REQUEST)
+			return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 		finally:
-			call = CallStartRecord.objects.all()
-			callend = CallEndRecord.objects.all()
+			call = CallStart.objects.all()
+			callend = CallEnd.objects.all()
 			for start in call:
 				for end in callend:
-					if start.call_pair_id == end.call_pair_id:
-						CallRecord.objects.create(destination=start.destination_number, 
-							call_start_time=start.record_timestamp.time(), 
-							call_start_date=start.record_timestamp.date(), 
-							call_duration = end.record_end_timestamp - start.record_timestamp, 
-							call_price = 200, 
-							bill_id=1)
-
-
-
-
-
+					if start.call_id == end.call_id:
+						CallRecord.objects.create(
+							destination=start.destination, 
+							start_time=start.timestamp.time(), 
+							start_date=start.timestamp.date(), 
+							duration = end.timestamp - start.timestamp, 
+							price = 30, 
+							)
 
 
 class CallRecordCreate(generics.ListCreateAPIView):
