@@ -53,6 +53,20 @@ class CallStartCreate(generics.ListCreateAPIView):
 				serializer.save()
 				return Response(serializer.data, status=status.HTTP_201_CREATED)
 			return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
+		finally:
+			call_id = serializer.data['call_id']
+			call = CallStart.objects.all()
+			callend = CallEnd.objects.all()
+			for start in call:
+				for end in callend:
+					if start.call_id == call_id and end.call_id == call_id:
+						CallRecord.objects.create(
+							destination=start.destination, 
+							start_time=start.timestamp.time(), 
+							start_date=start.timestamp.date(), 
+							duration = end.timestamp - start.timestamp, 
+							price = billing(start.timestamp, end.timestamp) 
+							)
 
 class CallEndCreate(generics.ListCreateAPIView):
 	queryset = CallEnd.objects.all()

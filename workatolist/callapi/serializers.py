@@ -44,6 +44,11 @@ class CallEndSerializer(serializers.ModelSerializer):
 
 
 class CallRecordSerializer(serializers.ModelSerializer):
+	price = serializers.SerializerMethodField()
+
+	def get_price(self, obj):
+		return f'R$ {obj.price}'
+
 	class Meta:
 		model = CallRecord
 		fields = '__all__'
