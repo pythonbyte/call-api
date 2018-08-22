@@ -60,11 +60,9 @@ class CallEndCreate(generics.ListCreateAPIView):
 
 	def create(self, validated_data):
 		try:
-			print(validated_data.data)
 			call_id = validated_data.data['call_id']
 			timestamp = validated_data.data['timestamp']
 		except:
-			print(validated_data.data)
 			raise serializers.ValidationError({
 				"non_fields_error": [
 					"All fields are required.",
@@ -76,20 +74,23 @@ class CallEndCreate(generics.ListCreateAPIView):
 												"timestamp": timestamp})
 			if serializer.is_valid():
 				serializer.save()
+				return Response(serializer.data, status=status.HTTP_201_CREATED)
 			return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 		finally:
+			call_id = serializer.data['call_id']
 			call = CallStart.objects.all()
 			callend = CallEnd.objects.all()
 			for start in call:
 				for end in callend:
-					if start.call_id == end.call_id:
+					if start.call_id == call_id and end.call_id == call_id:
 						CallRecord.objects.create(
 							destination=start.destination, 
 							start_time=start.timestamp.time(), 
 							start_date=start.timestamp.date(), 
 							duration = end.timestamp - start.timestamp, 
-							price = 30, 
+							price = billing(start.timestamp, end.timestamp) 
 							)
+
 
 
 class CallRecordCreate(generics.ListCreateAPIView):
