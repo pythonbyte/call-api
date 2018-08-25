@@ -20,8 +20,6 @@ def api_root(request, format=None):
         						format=format),
         'Call Ends': reverse('call-end', request=request, 
         						format=format),
-        'Call Records': reverse('call-records', request=request, 
-        						format=format),
         'Telephone Bills': reverse('bills', request=request, 
         						format=format),
     })
@@ -72,6 +70,7 @@ class CallStartCreate(generics.ListCreateAPIView):
 							destination=start.destination, 
 							start_time=start.timestamp.time(), 
 							start_date=start.timestamp.date(), 
+							end_date=end.timestamp.date(), 
 							duration = end.timestamp - start.timestamp, 
 							price = billing(start.timestamp, end.timestamp) 
 							)
@@ -108,13 +107,14 @@ class CallEndCreate(generics.ListCreateAPIView):
 						try:
 							pbill = PhoneBill.objects.create(subscriber=start.source)
 						except:
-							pbill = PhoneBill.objects.filter(subscriber=start.source)
+							pbill = PhoneBill.objects.get(subscriber=start.source)
 
 						CallRecord.objects.create(
 							source = start.source,
 							destination=start.destination, 
 							start_time=start.timestamp.time(), 
 							start_date=start.timestamp.date(), 
+							end_date=end.timestamp.date(), 
 							duration = end.timestamp - start.timestamp, 
 							price = billing(start.timestamp, end.timestamp),
 							bill = pbill
@@ -131,15 +131,6 @@ class PhoneBillView(generics.ListAPIView):
 	queryset = PhoneBill.objects.all()
 	serializer_class = PhoneBillSerializer
 
-
-
-	# def get_queryset(self):
-	# 	subscriber = self.request.GET.get('subscriber', None)
-	# 	bills = CallRecord.objects.filter(start_date__month=2)
-	# 	p = PhoneBill.objects.filter(subscriber=subscriber)
-	# 	return p
-
-
 	def list(self, request):
 		subscriber = request.GET.get('subscriber', None)
 		period = request.GET.get('period', None)
@@ -148,10 +139,15 @@ class PhoneBillView(generics.ListAPIView):
 		    msg = 'Please insert a subscriber'
 		    return Response(msg, status=status.HTTP_400_BAD_REQUEST)
 
+		try:   
+			queryset = PhoneBill.objects.get(subscriber=subscriber)
+		except PhoneBill.DoesNotExist:
+			error = 'Invalid subscriber number'
+			return Response(error, status=status.HTTP_400_BAD_REQUEST)
+
 		if period is not None:
 			period = datetime.strptime(period, '%m/%Y')
-		   
-		queryset = PhoneBill.objects.get(subscriber=subscriber)
+		
 		queryset.period = period
 		serializer = PhoneBillSerializer(instance=queryset)
 		return Response(serializer.data)

@@ -45,26 +45,25 @@ class CallEndSerializer(serializers.ModelSerializer):
 
 class CallRecordSerializer(serializers.ModelSerializer):
 	price = serializers.SerializerMethodField()
+	duration = serializers.SerializerMethodField()
 
 	def get_price(self, instance):
-		return f'R$ {instance.price}'
+		return f'R$ {instance.price}'.replace('.',',')
+
+	def get_duration(self, instance):
+		return instance.duration.__str__()
 
 	class Meta:
 		model = CallRecord
-		exclude = ['source', 'bill','id']
+		fields = ['destination', 'start_date', 'start_time', 'duration', 'price']
 
 
 class PhoneBillSerializer(serializers.ModelSerializer):
 	subscriber= serializers.CharField(min_length=10, max_length=11, required=True)
 	period = serializers.SerializerMethodField()
-	total = serializers.CharField(max_length=10)
+	total = serializers.SerializerMethodField()
 	bills = serializers.SerializerMethodField()
 	
-
-	def get(self, instance, validated_data):
-		print(self, instance, validated_data, validated_data.data)
-		pass
-
 
 	def get_bills(self, instance):
 		if instance.period == None:
@@ -75,7 +74,8 @@ class PhoneBillSerializer(serializers.ModelSerializer):
 		else:
 			month = instance.period.month
 			year  = instance.period.year
-		call = CallRecord.objects.filter(source=instance.subscriber, start_date__month=month, start_date__year=year)
+
+		call = CallRecord.objects.filter(source=instance.subscriber, end_date__month=month, end_date__year=year)
 		ser = CallRecordSerializer(call, many=True)
 		return ser.data
 
@@ -90,10 +90,22 @@ class PhoneBillSerializer(serializers.ModelSerializer):
 			year  = instance.period.year
 		return f"{month}/{year}"
 
-	def save(self):
-		period = self.validated_data['period']
-		print(period)
-		article = self.validated_data['article']
+
+	def get_total(self,instance):
+		if instance.period == None:
+			now = datetime.now()
+			month = now.month - 1
+			year = now.year
+			
+		else:
+			month = instance.period.month
+			year  = instance.period.year
+
+		calls = CallRecord.objects.filter(source=instance.subscriber, end_date__month=month, end_date__year=year)
+		total = 0
+		for call in calls:
+			total = total + call.price
+		return f"R$ {total}".replace('.',',')
 
 	class Meta:
 		model = PhoneBill
