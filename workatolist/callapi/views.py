@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.shortcuts import render, get_object_or_404
 
 from rest_framework import generics,status, serializers
@@ -10,6 +11,7 @@ from callapi.models import CallStart, CallEnd, CallRecord, PhoneBill
 from callapi.serializers import (CallStartSerializer, CallEndSerializer, 
 								CallRecordSerializer, PhoneBillSerializer)
 from .billing import billing
+
 
 @api_view(['GET'])
 def api_root(request, format=None):
@@ -60,7 +62,13 @@ class CallStartCreate(generics.ListCreateAPIView):
 			for start in call:
 				for end in callend:
 					if start.call_id == call_id and end.call_id == call_id:
+						try:
+							pbill = PhoneBill.objects.create(subscriber=start.source)
+						except:
+							pbill = PhoneBill.objects.filter(subscriber=start.source)
+							
 						CallRecord.objects.create(
+							source = start.source,
 							destination=start.destination, 
 							start_time=start.timestamp.time(), 
 							start_date=start.timestamp.date(), 
@@ -97,28 +105,53 @@ class CallEndCreate(generics.ListCreateAPIView):
 			for start in call:
 				for end in callend:
 					if start.call_id == call_id and end.call_id == call_id:
+						try:
+							pbill = PhoneBill.objects.create(subscriber=start.source)
+						except:
+							pbill = PhoneBill.objects.filter(subscriber=start.source)
+
 						CallRecord.objects.create(
+							source = start.source,
 							destination=start.destination, 
 							start_time=start.timestamp.time(), 
 							start_date=start.timestamp.date(), 
 							duration = end.timestamp - start.timestamp, 
-							price = billing(start.timestamp, end.timestamp) 
+							price = billing(start.timestamp, end.timestamp),
+							bill = pbill
 							)
 
 
 
-class CallRecordCreate(generics.ListCreateAPIView):
+class CallRecordView(generics.ListAPIView):
 	queryset = CallRecord.objects.all()
 	serializer_class = CallRecordSerializer
 
 
-class PhoneBillCreate(generics.ListCreateAPIView):
+class PhoneBillView(generics.ListAPIView):
 	queryset = PhoneBill.objects.all()
 	serializer_class = PhoneBillSerializer
 
-	# def get(self, request):
-	# 	number = self.request.query_params.get('subscriber_phone', None)
-	# 	call = PhoneBill.objects.filter(subscriber_phone=number)
-	# 	serializer = PhoneBillSerializer(call, many=True)
-	# 	return Response(serializer.data, status=status.HTTP_200_OK)
 
+
+	# def get_queryset(self):
+	# 	subscriber = self.request.GET.get('subscriber', None)
+	# 	bills = CallRecord.objects.filter(start_date__month=2)
+	# 	p = PhoneBill.objects.filter(subscriber=subscriber)
+	# 	return p
+
+
+	def list(self, request):
+		subscriber = request.GET.get('subscriber', None)
+		period = request.GET.get('period', None)
+
+		if subscriber is None:
+		    msg = 'Please insert a subscriber'
+		    return Response(msg, status=status.HTTP_400_BAD_REQUEST)
+
+		if period is not None:
+			period = datetime.strptime(period, '%m/%Y')
+		   
+		queryset = PhoneBill.objects.get(subscriber=subscriber)
+		queryset.period = period
+		serializer = PhoneBillSerializer(instance=queryset)
+		return Response(serializer.data)

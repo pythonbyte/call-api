@@ -11,8 +11,8 @@ urlpatterns = [
 	path('', api_root),
     path('call/', CallStartCreate.as_view(), name='call-start'),
     path('callend/', CallEndCreate.as_view(), name='call-end'),
-    path('callrecord/', CallRecordCreate.as_view(), name='call-records'),
-    path('bills/', PhoneBillCreate.as_view(), name='bills')
+    path('callrecord/', CallRecordView.as_view(), name='call-records'),
+    path('bills/', PhoneBillView.as_view(), name='bills')
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)
