@@ -18,10 +18,10 @@ class CallStartSerializer(serializers.ModelSerializer):
 		source_number = data['source']
 		destination_number = data['destination']
 		if source_number == destination_number:
-			raise serializers.ValidationError("Source number must be different to destination number")
+			raise serializers.ValidationError(
+				"Source number must be different to destination number"
+				)
 		return data
-
-
 
 	class Meta:
 		model = CallStart
@@ -31,7 +31,6 @@ class CallStartSerializer(serializers.ModelSerializer):
 
 class CallEndSerializer(serializers.ModelSerializer):
 	record_type	 = serializers.SerializerMethodField()
-
 
 	def get_record_type	(self, instance):
 		instance.record_end_type = 'end'
@@ -75,12 +74,13 @@ class PhoneBillSerializer(serializers.ModelSerializer):
 			month = instance.period.month
 			year  = instance.period.year
 
-		call = CallRecord.objects.filter(source=instance.subscriber, end_date__month=month, end_date__year=year)
-		ser = CallRecordSerializer(call, many=True)
-		return ser.data
+		call = CallRecord.objects.filter(source=instance.subscriber, 
+										end_date__month=month, 
+										end_date__year=year)
+		serializer = CallRecordSerializer(call, many=True)
+		return serializer.data
 
 	def get_period(self, instance):
-
 		if instance.period == None:
 			now = datetime.now()
 			month = now.month - 1
