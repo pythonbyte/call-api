@@ -6,7 +6,6 @@ name = "pypi"
 [packages]
 atomicwrites = "==1.2.0"
 attrs = "==18.1.0"
-django-rest-framework = "==0.1.0"
 djangorestframework = "==3.8.2"
 more-itertools = "==4.3.0"
 pluggy = "==0.7.1"
