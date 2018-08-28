@@ -101,7 +101,9 @@ class PhoneBillSerializer(serializers.ModelSerializer):
 			month = instance.period.month
 			year  = instance.period.year
 
-		calls = CallRecord.objects.filter(source=instance.subscriber, end_date__month=month, end_date__year=year)
+		calls = CallRecord.objects.filter(source=instance.subscriber, 
+											end_date__month=month, 
+											end_date__year=year)
 		total = 0
 		for call in calls:
 			total = total + call.price

@@ -8,7 +8,7 @@ from datetime import datetime
 
 
 from callapi.models import CallStart, CallEnd, PhoneBill
-from callapi.serializers import CallStartSerializer, CallEndSerializer
+from callapi.serializers import CallStartSerializer, CallEndSerializer, PhoneBillSerializer
 
 
 class TestCallStart(APITestCase):
@@ -16,14 +16,14 @@ class TestCallStart(APITestCase):
 		self.client = APIClient()
 
 		self.valid_call = CallStart(source='9997073333', 
-								call_id=190,
+								call_id='1',
 								destination= "9930940770", 
 							timestamp=datetime(2002,3,11,11,11,10, 
 											tzinfo=pytz.UTC))
 
 
 		self.invalid_call = CallStart(source='9997073333', 
-								call_id=190,
+								call_id='1',
 							timestamp=datetime(2002,3,11,11,11,10, 
 											tzinfo=pytz.UTC))
 
@@ -73,13 +73,13 @@ class TestCallEnd(APITestCase):
 											tzinfo=pytz.UTC))
 
 
-	def test_create_callend(self):
+	def test_create_count_callend(self):
 		old_count = CallEnd.objects.count()
-		self.call.save()
+		self.valid_callend.save()
 		new_count = CallEnd.objects.count()
 		self.assertNotEqual(old_count, new_count)
 
-	def test_create_valid_callstart(self):
+	def test_create_valid_callend(self):
 		url = reverse('call-end')
 		call = self.valid_callend
 		serializer = CallEndSerializer(call)
@@ -97,18 +97,22 @@ class TestCallEnd(APITestCase):
 
 
 
+
 class TestPhoneBill(APITestCase):
 	def setUp(self):
 		self.client = APIClient()
-		self.call = PhoneBill(subscriber='3199778899')
+		self.phonebill = PhoneBill.objects.create(subscriber='3199778899')
 
-
-	def test_create_phonebill(self):
-		old_count = PhoneBill.objects.count()
-		self.call.save()
-		new_count = PhoneBill.objects.count()
-		self.assertNotEqual(old_count, new_count)
 
 	def test_get_method_without_data_phonebill_endpoint(self):
 		response = self.client.get(reverse('bills'))
 		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+	def test_get_bill_data(self):
+		url = reverse('bills')
+		params = {"subscriber": "3199778899"}
+		bill = self.phonebill
+		serializer = PhoneBillSerializer(bill)
+		response = self.client.get(url, data=serializer.data, params=params)
+		self.assertEqual(response.status_code, status.HTTP_200_OK)

@@ -26,7 +26,7 @@ def api_root(request, format=None):
 
 
 
-class CallStartCreate(generics.ListCreateAPIView):
+class CallStartCreate(generics.CreateAPIView):
 	queryset = CallStart.objects.all()
 	serializer_class = CallStartSerializer
 
@@ -54,28 +54,32 @@ class CallStartCreate(generics.ListCreateAPIView):
 				return Response(serializer.data, status=status.HTTP_201_CREATED)
 			return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
 		finally:
-			call_id = serializer.data['call_id']
-			call = CallStart.objects.all()
-			callend = CallEnd.objects.all()
-			for start in call:
-				for end in callend:
-					if start.call_id == call_id and end.call_id == call_id:
-						try:
-							pbill = PhoneBill.objects.create(subscriber=start.source)
-						except:
-							pbill = PhoneBill.objects.filter(subscriber=start.source)
-							
-						CallRecord.objects.create(
-							source = start.source,
-							destination=start.destination, 
-							start_time=start.timestamp.time(), 
-							start_date=start.timestamp.date(), 
-							end_date=end.timestamp.date(), 
-							duration = end.timestamp - start.timestamp, 
-							price = billing(start.timestamp, end.timestamp) 
-							)
+			try:
+				call_id = serializer.data['call_id']
+				call = CallStart.objects.all()
+				callend = CallEnd.objects.all()
+				for start in call:
+					for end in callend:
+						if start.call_id == call_id and end.call_id == call_id:
+							try:
+								pbill = PhoneBill.objects.create(subscriber=start.source)
+							except:
+								pbill = PhoneBill.objects.filter(subscriber=start.source)
+								
+							CallRecord.objects.create(
+								source = start.source,
+								destination=start.destination, 
+								start_time=start.timestamp.time(), 
+								start_date=start.timestamp.date(), 
+								end_date=end.timestamp.date(), 
+								duration = end.timestamp - start.timestamp, 
+								price = billing(start.timestamp, end.timestamp),
+								bill = pbill
+								)
+			except:
+				pass
 
-class CallEndCreate(generics.ListCreateAPIView):
+class CallEndCreate(generics.CreateAPIView):
 	queryset = CallEnd.objects.all()
 	serializer_class = CallEndSerializer
 
@@ -98,27 +102,30 @@ class CallEndCreate(generics.ListCreateAPIView):
 				return Response(serializer.data, status=status.HTTP_201_CREATED)
 			return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 		finally:
-			call_id = serializer.data['call_id']
-			call = CallStart.objects.all()
-			callend = CallEnd.objects.all()
-			for start in call:
-				for end in callend:
-					if start.call_id == call_id and end.call_id == call_id:
-						try:
-							pbill = PhoneBill.objects.create(subscriber=start.source)
-						except:
-							pbill = PhoneBill.objects.get(subscriber=start.source)
+			try:
+				call_id = serializer.data['call_id']
+				call = CallStart.objects.all()
+				callend = CallEnd.objects.all()
+				for start in call:
+					for end in callend:
+						if start.call_id == call_id and end.call_id == call_id:
+							try:
+								pbill = PhoneBill.objects.create(subscriber=start.source)
+							except:
+								pbill = PhoneBill.objects.get(subscriber=start.source)
 
-						CallRecord.objects.create(
-							source = start.source,
-							destination=start.destination, 
-							start_time=start.timestamp.time(), 
-							start_date=start.timestamp.date(), 
-							end_date=end.timestamp.date(), 
-							duration = end.timestamp - start.timestamp, 
-							price = billing(start.timestamp, end.timestamp),
-							bill = pbill
-							)
+							CallRecord.objects.create(
+								source = start.source,
+								destination=start.destination, 
+								start_time=start.timestamp.time(), 
+								start_date=start.timestamp.date(), 
+								end_date=end.timestamp.date(), 
+								duration = end.timestamp - start.timestamp, 
+								price = billing(start.timestamp, end.timestamp),
+								bill = pbill
+								)
+			except:
+				pass
 
 
 
@@ -136,13 +143,13 @@ class PhoneBillView(generics.ListAPIView):
 		period = request.GET.get('period', None)
 
 		if subscriber is None:
-		    msg = 'Please insert a subscriber'
-		    return Response(msg, status=status.HTTP_400_BAD_REQUEST)
+		    error = {"error": "Field subscriber is required"}
+		    return Response(error, status=status.HTTP_400_BAD_REQUEST)
 
 		try:   
 			queryset = PhoneBill.objects.get(subscriber=subscriber)
 		except PhoneBill.DoesNotExist:
-			error = 'Invalid subscriber number'
+			error = {"error": "Invalid subscriber number"}
 			return Response(error, status=status.HTTP_400_BAD_REQUEST)
 
 		if period is not None:
