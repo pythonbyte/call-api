@@ -26,9 +26,8 @@ Remember that if there is no intention to use Heroku, need to comment dj_databas
 # Testing
 
 To test the application use:
-```
-$ python manage.py test
-```
+
+```$ python manage.py test```
 
 # Work Enviroment
 
