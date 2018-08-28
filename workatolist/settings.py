@@ -122,9 +122,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
+STATIC_ROOT = '/home/django/django_project/django_project/static'
 STATIC_URL = '/static/'
-STATIC_ROOT = 'static' # Important for Heroku
 
 STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, 'static'),  # Important for Heroku
+    os.path.join(BASE_DIR, 'static'),
 )
