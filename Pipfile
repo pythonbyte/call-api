@@ -16,6 +16,7 @@ pytest = "==3.7.2"
 pytz = "==2018.5"
 six = "==1.11.0"
 Django = "==2.1"
+gunicorn = "*"
 
 [dev-packages]
 
