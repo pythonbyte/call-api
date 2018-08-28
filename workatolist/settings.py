@@ -13,7 +13,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'f$%xs5-k@q)816nzo)oqxfx@ws&a7d$$y*%&i#2+!$copl2$kl'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['desolate-fortress-35658.herokuapp.com', 'localhost']
 
