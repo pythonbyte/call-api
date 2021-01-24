@@ -1,10 +1,9 @@
-# Work at Olist - Call API
+# Call API
 
 # Description
 
-This project is a challenge for a job opening in Olist. It's like a Call Receiver, the API will receive Start Calls and End Calls and the API will return the bills of subscribers number, accordingly with the period sent as parameter.
+This project it's like a Call Receiver, the API will receive Start Calls and End Calls and the API will return the bills of subscribers number, accordingly with the period sent as parameter.
 
-Deployed app at Heroku: https://desolate-fortress-35658.herokuapp.com/
 
 # Installing
 
@@ -31,11 +30,9 @@ To test the application use:
 
 # Work Enviroment
 
-* **Computer**         - Dell Inspiron 15
-* **Operating System** - Linux manjaro 4.14.65-1-MANJARO
 * **Text Editor**      - Sublime Text v3.1.1
 * **Python** - 3.7.0
-* **Django** - 2.1 
+* **Django** - 2.1
 * **djangorestframework** - 3.8.2
 
 
@@ -44,7 +41,7 @@ To test the application use:
 This API works with 3 simple endpoints:
 
 ## Call Start Endpoint
-This endpoint works at the **/call/** , the parameters needed to send to create a Call Start is 'call_id', 'source', 'destination' and 'timestamp'. The 'id' and 'record_type' fields are automatically generated. 
+This endpoint works at the **/call/** , the parameters needed to send to create a Call Start is 'call_id', 'source', 'destination' and 'timestamp'. The 'id' and 'record_type' fields are automatically generated.
 Besides that the source and destination number will only accept 10 or 11 numbers.
 
 Post data:
@@ -68,7 +65,7 @@ Response data:
 }
 ```
 ## Call End Endpoint
-This endpoint works at the **/callend/** , the parameters needed to send to create a Call End is 'call_id' and 'timestamp'. The 'id' and 'record_type' fields are automatically generated. 
+This endpoint works at the **/callend/** , the parameters needed to send to create a Call End is 'call_id' and 'timestamp'. The 'id' and 'record_type' fields are automatically generated.
 
 Post data:
 ```
@@ -90,7 +87,7 @@ The call records are automatically created after a call_start id matches a call_
 
 ## Phone Bill Endpoint
 This endpoint works at the **/bills/** , the only parameter required is 'subscriber' and you can set 'period' with format 'mm/YYYY' to search for a period of bills for that subscriber. If the period parameter is not sent, the API will return the last closed month bill.
- 
+
 
 Post data:
 ```

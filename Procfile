@@ -1,2 +1,2 @@
 release: python manage.py migrate
-web: gunicorn workatolist.wsgi --log-file -
+web: gunicorn app.wsgi --log-file -
